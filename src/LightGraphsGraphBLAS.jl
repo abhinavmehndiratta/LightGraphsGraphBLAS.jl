@@ -7,11 +7,10 @@ import LightGraphs:
     indegree, outdegree, inneighbors, outneighbors, edgetype, edges,
     SimpleGraphs.SimpleEdge, weights
 
-export BLASGraph, BLASDiGraph, free
-
 import Base:
     eltype, zero
 
+# check if GraphBLAS operation was successful, else throw an error
 function OK(info::GrB_Info)
     info != GrB_SUCCESS && error(info)
     return true
@@ -89,7 +88,7 @@ end
 function outdegree(g::BLASDiGraph, v::Int64)
     M = g.A
     row_v = GrB_Vector(Bool, nv(g))
-    inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN)) 
+    inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
     OK( GrB_Col_extract(row_v, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), v, inp0_tran_desc) )
     n = nnz(row_v)
     OK( GrB_free(row_v) )
@@ -182,7 +181,7 @@ end
 function outneighbors(g::AbstractBLASGraph, v::GrB_Index)
     M = g.A
     x = GrB_Vector(Bool, nv(g))
-    inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN)) 
+    inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
     OK( GrB_Col_extract(x, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), v, inp0_tran_desc) )
     nbrs, _ = findnz(x)
     OK( GrB_free(x) )
@@ -215,5 +214,12 @@ function dropzeros!(M::GrB_Matrix)
     OK( GrB_assign(M, M, GrB_NULL, M, GrB_ALL, 0, GrB_ALL, 0, outp_replace_desc) )
     OK( GrB_free(outp_replace_desc) )
 end
+
+# Algorithms
+export BLASGraph, BLASDiGraph, free
+export count_triangles
+import LightGraphs.gdistances
+include("algorithms/bfs.jl")
+include("algorithms/tricount.jl")
 
 end # module
