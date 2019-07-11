@@ -8,7 +8,7 @@ import LightGraphs:
     SimpleGraphs.SimpleEdge, weights
 
 import Base:
-    eltype, zero
+    eltype, zero, size, getindex, setindex!
 
 # check if GraphBLAS operation was successful, else throw an error
 function OK(info::GrB_Info)
@@ -31,6 +31,14 @@ mutable struct BLASDiGraph{T} <: AbstractBLASGraph{T}
         ne::Int64
 end
 Base.show(io::IO, g::BLASDiGraph) = print("{", nv(g), ", ", ne(g), "} directed graph")
+
+struct BLASGraphWeights{T} <: AbstractMatrix{T}
+        A::GrB_Matrix{T}
+end
+
+size(w::BLASGraphWeights) = size(w.A)
+getindex(w::BLASGraphWeights, r::Int64, c::Int64) = getindex(w.A, r, c)
+setindex!(w::BLASGraphWeights{T}, X::T, I::Int64, J::Int64) where T = setindex!(w.A, X, I, J)
 
 function BLASGraph(A::GrB_Matrix{T}) where T
     nrows, ncols = size(A)
@@ -207,7 +215,7 @@ eltype(::AbstractBLASGraph) = Int64
 
 edgetype(::AbstractBLASGraph) = SimpleEdge{Int64}
 
-weights(g::AbstractBLASGraph) = g.A
+weights(g::AbstractBLASGraph) = BLASGraphWeights(g.A)
 
 function dropzeros!(M::GrB_Matrix)
     outp_replace_desc = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE))
