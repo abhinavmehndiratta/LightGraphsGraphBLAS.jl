@@ -38,7 +38,6 @@ end
 
 size(w::BLASGraphWeights) = size(w.A)
 getindex(w::BLASGraphWeights, r::Int64, c::Int64) = getindex(w.A, r-1, c-1)
-setindex!(w::BLASGraphWeights{T}, X::T, I::Int64, J::Int64) where T = setindex!(w.A, X, I-1, J-1)
 
 function BLASGraph(A::GrB_Matrix{T}) where T
     nrows, ncols = size(A)
