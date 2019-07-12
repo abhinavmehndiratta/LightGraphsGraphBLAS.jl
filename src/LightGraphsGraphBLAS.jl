@@ -61,11 +61,14 @@ end
 function BLASGraph(lg::SimpleGraph)
     A = GrB_Matrix(Int64, nv(lg), nv(lg))
     g = BLASGraph(A)
-    for e in edges(lg)
-        s = src(e)
-        d = dst(e)
-        add_edge!(g, s, d)
+    for u in vertices(lg)
+        for v in outneighbors(lg, u)
+            s = u-1
+            d = v-1
+            A[s, d] = 1
+        end
     end
+    g.ne = ne(lg)
     return g
 end
 
@@ -83,11 +86,14 @@ end
 function BLASDiGraph(lg::SimpleDiGraph)
     A = GrB_Matrix(Int64, nv(lg), nv(lg))
     g = BLASDiGraph(A)
-    for e in edges(lg)
-        s = src(e)
-        d = dst(e)
-        add_edge!(g, s, d)
+    for u in vertices(lg)
+        for v in outneighbors(lg, u)
+            s = u-1
+            d = v-1
+            A[s, d] = 1
+        end
     end
+    g.ne = ne(lg)
     return g
 end
 
