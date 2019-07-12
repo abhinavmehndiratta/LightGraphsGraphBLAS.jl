@@ -208,12 +208,8 @@ function has_edge(g::AbstractBLASGraph, s::Int64, d::Int64)
     s = s-1
     d = d-1
     M = g.A
-    try
-        M[s, d]
-        return true
-    catch
-        return false
-    end
+    (typeof(GrB_Matrix_extractElement(M, s, d)) != GrB_Info) && return true
+    return false
 end
 
 function inneighbors(g::AbstractBLASGraph, v::Int64)
