@@ -8,7 +8,7 @@ import LightGraphs:
     SimpleGraphs.SimpleEdge, weights
 
 import Base:
-    eltype, zero, size, getindex, setindex!
+    eltype, size, getindex, setindex!
 
 # check if GraphBLAS operation was successful, else throw an error
 function OK(info::GrB_Info)
@@ -37,8 +37,8 @@ struct BLASGraphWeights{T} <: AbstractMatrix{T}
 end
 
 size(w::BLASGraphWeights) = size(w.A)
-getindex(w::BLASGraphWeights, r::Int64, c::Int64) = getindex(w.A, r, c)
-setindex!(w::BLASGraphWeights{T}, X::T, I::Int64, J::Int64) where T = setindex!(w.A, X, I, J)
+getindex(w::BLASGraphWeights, r::Int64, c::Int64) = getindex(w.A, r-1, c-1)
+setindex!(w::BLASGraphWeights{T}, X::T, I::Int64, J::Int64) where T = setindex!(w.A, X, I-1, J-1)
 
 function BLASGraph(A::GrB_Matrix{T}) where T
     nrows, ncols = size(A)
@@ -59,6 +59,17 @@ function BLASGraph(A::GrB_Matrix{T}) where T
     return BLASGraph{T}(A, nrows, nnz(A)/2)
 end
 
+function BLASGraph(lg::SimpleGraph)
+    A = GrB_Matrix(Int64, nv(lg), nv(lg))
+    g = BLASGraph(A)
+    for e in edges(lg)
+        s = src(e)
+        d = dst(e)
+        add_edge!(g, s, d)
+    end
+    return g
+end
+
 function BLASDiGraph(A::GrB_Matrix{T}) where T
     nrows, ncols = size(A)
 
@@ -68,6 +79,17 @@ function BLASDiGraph(A::GrB_Matrix{T}) where T
     dropzeros!(A)
 
     return BLASDiGraph{T}(A, nrows, nnz(A))
+end
+
+function BLASDiGraph(lg::SimpleDiGraph)
+    A = GrB_Matrix(Int64, nv(lg), nv(lg))
+    g = BLASDiGraph(A)
+    for e in edges(lg)
+        s = src(e)
+        d = dst(e)
+        add_edge!(g, s, d)
+    end
+    return g
 end
 
 function free(g::BLASGraph)
@@ -85,6 +107,7 @@ ne(g::AbstractBLASGraph) = g.ne
 nv(g::AbstractBLASGraph) = g.nv
 
 function indegree(g::AbstractBLASGraph, v::Int64)
+    v = v-1
     M = g.A
     col_v = GrB_Vector(Bool, nv(g))
     OK( GrB_Col_extract(col_v, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), v, GrB_NULL) )
@@ -94,6 +117,7 @@ function indegree(g::AbstractBLASGraph, v::Int64)
 end
 
 function outdegree(g::BLASDiGraph, v::Int64)
+    v = v-1
     M = g.A
     row_v = GrB_Vector(Bool, nv(g))
     inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
@@ -111,13 +135,15 @@ is_directed(::BLASDiGraph) = true
 is_directed(::Type{<:BLASGraph}) = false
 is_directed(::Type{<:BLASDiGraph}) = true
 
-vertices(g::AbstractBLASGraph) = 0:(nv(g)-1)
+vertices(g::AbstractBLASGraph) = 1:nv(g)
 
-has_vertex(g::AbstractBLASGraph, v::GrB_Index) = (v >= 0 && v < nv(g)) ? true : false
+has_vertex(g::AbstractBLASGraph, v::Int64) = (v > 0 && v <= nv(g)) ? true : false
 
-function add_edge!(g::BLASGraph{T}, s::GrB_Index, d::GrB_Index, weight::T = one(T)) where T
-    M = g.A
+function add_edge!(g::BLASGraph{T}, s::Int64, d::Int64, weight::T = one(T)) where T
     (has_edge(g, s, d) || weight == zero(T)) && return false    # zero weight edges not allowed
+    s = s-1
+    d = d-1
+    M = g.A
     try
         M[s, d] = weight
         M[d, s] = weight
@@ -128,9 +154,11 @@ function add_edge!(g::BLASGraph{T}, s::GrB_Index, d::GrB_Index, weight::T = one(
     end
 end
 
-function add_edge!(g::BLASDiGraph{T}, s::GrB_Index, d::GrB_Index, weight::T = one(T)) where T
-    M = g.A
+function add_edge!(g::BLASDiGraph{T}, s::Int64, d::Int64, weight::T = one(T)) where T
     (has_edge(g, s, d) || weight == zero(T)) && return false    # zero weight edges not allowed
+    s = s-1
+    d = d-1
+    M = g.A
     try
         M[s, d] = weight
         g.ne += 1
@@ -140,8 +168,10 @@ function add_edge!(g::BLASDiGraph{T}, s::GrB_Index, d::GrB_Index, weight::T = on
     end
 end
 
-function rem_edge!(g::BLASGraph{T}, s::GrB_Index, d::GrB_Index) where T
+function rem_edge!(g::BLASGraph{T}, s::Int64, d::Int64) where T
     has_edge(g, s, d) || return false
+    s = s-1
+    d = d-1
     M = g.A
     try
         M[s, d] = T(0)
@@ -154,8 +184,10 @@ function rem_edge!(g::BLASGraph{T}, s::GrB_Index, d::GrB_Index) where T
     end
 end
 
-function rem_edge!(g::BLASDiGraph{T}, s::GrB_Index, d::GrB_Index) where T
+function rem_edge!(g::BLASDiGraph{T}, s::Int64, d::Int64) where T
     has_edge(g, s, d) || return false
+    s = s-1
+    d = d-1
     M = g.A
     try
         M[s, d] = T(0)
@@ -167,7 +199,9 @@ function rem_edge!(g::BLASDiGraph{T}, s::GrB_Index, d::GrB_Index) where T
     end
 end
 
-function has_edge(g::AbstractBLASGraph, s::GrB_Index, d::GrB_Index)
+function has_edge(g::AbstractBLASGraph, s::Int64, d::Int64)
+    s = s-1
+    d = d-1
     M = g.A
     try
         M[s, d]
@@ -177,16 +211,18 @@ function has_edge(g::AbstractBLASGraph, s::GrB_Index, d::GrB_Index)
     end
 end
 
-function inneighbors(g::AbstractBLASGraph, v::GrB_Index)
+function inneighbors(g::AbstractBLASGraph, v::Int64)
+    v = v-1
     M = g.A
     x = GrB_Vector(Bool, nv(g))
     OK( GrB_Col_extract(x, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), v, GrB_NULL) )
     nbrs, _ = findnz(x)
     OK( GrB_free(x) )
-    return nbrs
+    return nbrs.+1
 end
 
-function outneighbors(g::AbstractBLASGraph, v::GrB_Index)
+function outneighbors(g::AbstractBLASGraph, v::Int64)
+    v = v-1
     M = g.A
     x = GrB_Vector(Bool, nv(g))
     inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
@@ -194,22 +230,20 @@ function outneighbors(g::AbstractBLASGraph, v::GrB_Index)
     nbrs, _ = findnz(x)
     OK( GrB_free(x) )
     OK( GrB_free(inp0_tran_desc) )
-    return nbrs
+    return nbrs.+1
 end
 
 function edges(g::BLASGraph)
     M = UpperTriangular(g.A)
     I, J, _ = findnz(M)
     OK( GrB_free(M) )
-    return (SimpleEdge(I[i], J[i]) for i in 1:length(I))
+    return (SimpleEdge(I[i]+1, J[i]+1) for i in 1:length(I))
 end
 
 function edges(g::BLASDiGraph)
     I, J, _ = findnz(g.A)
-    return (SimpleEdge(I[i], J[i]) for i in 1:length(I))
+    return (SimpleEdge(I[i]+1, J[i]+1) for i in 1:length(I))
 end
-
-zero(g::T) where T <: AbstractBLASGraph = T(GrB_Matrix([], [], []))
 
 eltype(::AbstractBLASGraph) = Int64
 

@@ -1,4 +1,5 @@
 function gdistances(g::BLASGraph, s::Int64)
+    s = s-1
     A = g.A
     desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))
     n = nv(g)
@@ -25,21 +26,18 @@ function gdistances(g::BLASGraph, s::Int64)
         level += 1
     end
 
-    subtract1(x) = x-1
-    sub1 = GrB_UnaryOp()
-    GrB_UnaryOp_new(sub1, subtract1, GrB_INT64, GrB_INT64)
+    _, dists = findnz(v)
+    for i = 1:n
+        if dists[i] == 0
+            dists[i] = typemax(Int64)
+        else
+            dists[i] -= 1
+        end
+    end
 
-    OK( GrB_apply(v, v, GrB_NULL, sub1, v, GrB_NULL) )
-
-    mask_scmp_desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP))
-    OK( GrB_assign(v, v, GrB_NULL, typemax(Int64), GrB_ALL, 0, mask_scmp_desc) )
-    
     OK( GrB_free(q) )
     OK( GrB_free(desc) )
-    OK( GrB_free(sub1) )
-    OK( GrB_free(mask_scmp_desc) )
+    OK( GrB_free(v) )
 
-    v[s] = 0
-
-    return v
+    return dists
 end
