@@ -1,5 +1,5 @@
-function gdistances(g::BLASGraph, s::Int64)
-    s = s-1
+function gdistances(g::BLASGraph, s::Union{Int64, UInt64})
+    s = OneBasedIndex(s)
     A = g.A
     desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))
     n = nv(g)
@@ -26,14 +26,8 @@ function gdistances(g::BLASGraph, s::Int64)
         level += 1
     end
 
+    dropzeros!(v)
     _, dists = findnz(v)
-    for i = 1:n
-        if dists[i] == 0
-            dists[i] = typemax(Int64)
-        else
-            dists[i] -= 1
-        end
-    end
 
     OK( GrB_free(q) )
     OK( GrB_free(desc) )
