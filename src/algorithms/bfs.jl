@@ -26,12 +26,17 @@ function gdistances(g::BLASGraph, s::Union{Int64, UInt64})
         level += 1
     end
 
-    dropzeros!(v)
-    _, dists = findnz(v)
+    sub1(x) = x-1
+    subtract1 = GrB_UnaryOp()
+    OK( GrB_UnaryOp_new(subtract1, sub1, GrB_INT64, GrB_INT64) )
+    OK( GrB_Vector_apply(v, v, GrB_NULL, subtract1, v, GrB_NULL) )
+    mask_scmp_desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP))
+    OK( GrB_Vector_assign(v, v, GrB_NULL, typemax(Int64), GrB_ALL, 0, mask_scmp_desc) )
+    v[s] = 0
 
     OK( GrB_free(q) )
     OK( GrB_free(desc) )
-    OK( GrB_free(v) )
+    OK( GrB_free(mask_scmp_desc) )
 
-    return dists
+    return Dists(v)
 end

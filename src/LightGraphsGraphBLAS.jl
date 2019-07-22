@@ -7,7 +7,8 @@ import LightGraphs:
     indegree, outdegree, inneighbors, outneighbors, edgetype, edges,
     SimpleGraphs.SimpleEdge, weights, gdistances, bellman_ford_shortest_paths
 
-import Base.eltype
+import Base:
+        show, size, getindex, eltype
 
 include("abstractblasgraph.jl")
 include("blasgraph.jl")
