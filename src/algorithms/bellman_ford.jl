@@ -1,4 +1,4 @@
-function bellman_ford_shortest_paths(g::BLASGraph{T}, s::Union{Int64, UInt64}) where T
+function bellman_ford_shortest_paths(g::BLASGraph{T}, s::Integer) where T
     s = OneBasedIndex(s)
     A = g.A
  
@@ -39,6 +39,8 @@ function bellman_ford_shortest_paths(g::BLASGraph{T}, s::Union{Int64, UInt64}) w
             error("Negative-weight cycle found")
         end
     end
+
+    SuiteSparseGraphBLAS.dropzeros!(A)
 
     mask_scmp_desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP))
     OK( GrB_Vector_assign(d, d, GrB_NULL, typemax(Int64), GrB_ALL, 0, mask_scmp_desc) )

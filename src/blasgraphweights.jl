@@ -3,4 +3,4 @@ struct BLASGraphWeights{T} <: AbstractMatrix{T}
 end
 show(io::IO, ::BLASGraphWeights) = print("Weight matrix")
 size(w::BLASGraphWeights) = size(w.A)
-getindex(w::BLASGraphWeights, r::Union{Int64, UInt64}, c::Union{Int64, UInt64}) = getindex(w.A, OneBasedIndex(r), OneBasedIndex(c))
+getindex(w::BLASGraphWeights, r::Integer, c::Integer) = getindex(w.A, OneBasedIndex(r), OneBasedIndex(c))

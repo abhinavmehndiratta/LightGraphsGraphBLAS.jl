@@ -5,15 +5,17 @@ mutable struct BLASDiGraph{T} <: AbstractBLASGraph{T}
 end
 Base.show(io::IO, g::BLASDiGraph) = print("{", nv(g), ", ", ne(g), "} directed graph")
 
+BLASDiGraph{T}(A::GrB_Matrix{T}) where T = BLASDiGraph(A)
+
 function BLASDiGraph(A::GrB_Matrix{T}) where T
     nrows, ncols = size(A)
 
     nrows != ncols && error("Matrix must be square")
 
     # remove all zero weight edges
-    dropzeros!(A)
+    SuiteSparseGraphBLAS.dropzeros!(A)
 
-    return BLASDiGraph{T}(A, nrows, nnz(A))
+    return BLASDiGraph{T}(A, nrows, SuiteSparseGraphBLAS.nnz(A))
 end
 
 function BLASDiGraph(lg::SimpleDiGraph)
@@ -28,12 +30,22 @@ function BLASDiGraph(lg::SimpleDiGraph)
     return g
 end
 
-function outdegree(g::BLASDiGraph, v::Union{Int64, UInt64})
+BLASDiGraph(n::Union{Int64, UInt64}) = BLASDiGraph(GrB_Matrix(Float64, n, n))
+BLASDiGraph{T}(n::Union{Int64, UInt64}) where T = BLASDiGraph(GrB_Matrix(T, n, n))
+
+function BLASDiGraph(adjmx::SparseMatrixCSC)
+    I, J, X = SparseArrays.findnz(adjmx)
+    return BLASDiGraph(GrB_Matrix(OneBasedIndex.(I), OneBasedIndex.(J), X, nrows = size(adjmx, 1), ncols = size(adjmx, 2)))
+end
+
+BLASDiGraph(m::AbstractMatrix) = BLASDiGraph(sparse(m))
+
+function outdegree(g::BLASDiGraph, v::Integer)
     M = g.A
     row_v = GrB_Vector(Bool, nv(g))
     inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
     OK( GrB_Col_extract(row_v, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), OneBasedIndex(v), inp0_tran_desc) )
-    n = nnz(row_v)
+    n = SuiteSparseGraphBLAS.nnz(row_v)
     OK( GrB_free(row_v) )
     OK( GrB_free(inp0_tran_desc) )
     return n
@@ -42,15 +54,15 @@ end
 is_directed(::BLASDiGraph) = true
 is_directed(::Type{<:BLASDiGraph}) = true
 
-function add_edge!(g::BLASDiGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, UInt64}, weight::T = one(T)) where T
-    (has_edge(g, s, d) || weight == 0) && return false    # zero weight edges not allowed
+function add_edge!(g::BLASDiGraph{T}, s::Integer, d::Integer, weight::T = one(T)) where T
+    (!has_vertex(g, s) || !has_vertex(g, d) || weight == 0) && return false    # zero weight edges not allowed
     M = g.A
     M[OneBasedIndex(s), OneBasedIndex(d)] = weight
     g.ne += 1
     return true
 end
 
-function rem_edge!(g::BLASDiGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, UInt64}) where T
+function rem_edge!(g::BLASDiGraph{T}, s::Integer, d::Integer) where T
     has_edge(g, s, d) || return false
     M = g.A
     u = OneBasedIndex(s)
@@ -65,23 +77,24 @@ function rem_edge!(g::BLASDiGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, U
     return true
 end
 
-function edges(g::BLASDiGraph)
-    I, J, _ = findnz(g.A)
-    e = Vector{SimpleEdge{UInt64}}(undef, ne(g))
+function edges(g::BLASDiGraph{T}) where T
+    I, J, X = SuiteSparseGraphBLAS.findnz(g.A)
+    e = Vector{SimpleWeightedEdge{UInt64, T}}(undef, ne(g))
     for i = 1:length(I)
         u = I[i].x + 1
         v = J[i].x + 1
-        e[i] = SimpleEdge(u, v)
+        w = X[i]
+        e[i] = SimpleWeightedEdge(u, v, w)
     end
     return e
 end
 
-function outneighbors(g::BLASDiGraph, v::Union{Int64, UInt64})
+function outneighbors(g::BLASDiGraph, v::Integer)
     M = g.A
     x = GrB_Vector(Bool, nv(g))
     inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
     OK( GrB_Col_extract(x, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), OneBasedIndex(v), inp0_tran_desc) )
-    I, X = findnz(x)
+    I, X = SuiteSparseGraphBLAS.findnz(x)
     nbrs = Vector{UInt64}(undef, length(I))
     for i = 1:length(I)
         nbrs[i] = I[i].x + 1

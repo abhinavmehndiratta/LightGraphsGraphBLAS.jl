@@ -1,4 +1,4 @@
-function gdistances(g::BLASGraph, s::Union{Int64, UInt64})
+function gdistances(g::BLASGraph, s::Integer)
     s = OneBasedIndex(s)
     A = g.A
     desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))

@@ -28,4 +28,4 @@ function show(io::IO, w::Dists)
     end    
 end
 
-getindex(w::Dists, i::Union{Int64, UInt64}) = getindex(w.v, OneBasedIndex(i))
+getindex(w::Dists, i::Integer) = getindex(w.v, OneBasedIndex(i))

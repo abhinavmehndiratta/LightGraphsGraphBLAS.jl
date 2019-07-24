@@ -5,13 +5,15 @@ mutable struct BLASGraph{T} <: AbstractBLASGraph{T}
 end
 Base.show(io::IO, g::BLASGraph) = print("{", nv(g), ", ", ne(g) , "} undirected graph")
 
+BLASGraph{T}(A::GrB_Matrix{T}) where T = BLASGraph(A)
+
 function BLASGraph(A::GrB_Matrix{T}) where T
     nrows, ncols = size(A)
 
     nrows != ncols && error("Matrix must be square")
 
     # remove all zero weight edges
-    dropzeros!(A)
+    SuiteSparseGraphBLAS.dropzeros!(A)
 
     # check if matrix is symmetric
     A_TRAN = A'
@@ -21,7 +23,7 @@ function BLASGraph(A::GrB_Matrix{T}) where T
     end
     OK( GrB_free(A_TRAN) )
 
-    return BLASGraph{T}(A, nrows, nnz(A)/2)
+    return BLASGraph{T}(A, nrows, SuiteSparseGraphBLAS.nnz(A)/2)
 end
 
 function BLASGraph(lg::SimpleGraph)
@@ -36,11 +38,22 @@ function BLASGraph(lg::SimpleGraph)
     return g
 end
 
+BLASGraph(n::Union{Int64, UInt64}) = BLASGraph(GrB_Matrix(Float64, n, n))
+BLASGraph{T}(n::Union{Int64, UInt64}) where T = BLASGraph(GrB_Matrix(T, n, n))
+
+function BLASGraph(adjmx::SparseMatrixCSC)
+    I, J, X = SparseArrays.findnz(adjmx)
+    return BLASGraph(GrB_Matrix(OneBasedIndex.(I), OneBasedIndex.(J), X, nrows = size(adjmx, 1), ncols = size(adjmx, 2)))
+end
+
+BLASGraph(m::AbstractMatrix) = BLASGraph(sparse(m))
+
 is_directed(::BLASGraph) = false
 is_directed(::Type{<:BLASGraph}) = false
 
-function add_edge!(g::BLASGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, UInt64}, weight::T = one(T)) where T
-    (has_edge(g, s, d) || weight == 0) && return false    # zero weight edges not allowed
+function add_edge!(g::BLASGraph{T}, s::Integer, d::Integer, weight::T = one(T)) where T
+    (!has_vertex(g, s) || !has_vertex(g, d) || weight == 0) && return false    # zero weight edges not allowed
+    edge_was_present = has_edge(g, s, d)
     M = g.A
     u = OneBasedIndex(s)
     v = OneBasedIndex(d)
@@ -50,7 +63,7 @@ function add_edge!(g::BLASGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, UIn
     return true
 end
 
-function rem_edge!(g::BLASGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, UInt64}) where T
+function rem_edge!(g::BLASGraph{T}, s::Integer, d::Integer) where T
     has_edge(g, s, d) || return false
     M = g.A
     u = OneBasedIndex(s)
@@ -71,20 +84,21 @@ function rem_edge!(g::BLASGraph{T}, s::Union{Int64, UInt64}, d::Union{Int64, UIn
     return true
 end
 
-function edges(g::BLASGraph)
-    I, J, _ = findnz(g.A)
-    e = Vector{SimpleEdge{UInt64}}(undef, ne(g))
-    j::Int64 = 1
+function edges(g::BLASGraph{T}) where T
+    I, J, X = SuiteSparseGraphBLAS.findnz(g.A)
+    e = Vector{SimpleWeightedEdge{UInt64, T}}(undef, ne(g))
+    j = 1
     for i = 1:length(I)
         u = I[i].x + 1
         v = J[i].x + 1
         if u <= v
-            e[j] = SimpleEdge(u, v)
+            w = X[i]
+            e[j] = SimpleWeightedEdge(u, v, w)
             j += 1
         end
     end
     return e
 end
 
-outdegree(g::BLASGraph, v::UInt64) = indegree(g, v)
-outneighbors(g::BLASGraph, v::Union{Int64, UInt64}) = inneighbors(g, v)
+outdegree(g::BLASGraph, v::Integer) = indegree(g, v)
+outneighbors(g::BLASGraph, v::Integer) = inneighbors(g, v)

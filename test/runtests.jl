@@ -1,1 +1,1 @@
-using LightGraphs, GraphBLASInterface, SuiteSparseGraphBLAS, LightGraphsGraphBLAS
+using LightGraphs, GraphBLASInterface, SuiteSparseGraphBLAS, LightGraphsGraphBLAS, SparseArrays
