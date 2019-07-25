@@ -85,10 +85,13 @@ function rem_edge!(g::BLASDiGraph{T}, s::Integer, d::Integer) where T
     M[u, v] = T(0)
     w = GrB_Vector(UInt64, nv(g))
     desc1 = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE))
-    OK( GrB_Col_extract(w, GrB_NULL, GrB_NULL, M, GrB_ALL, 0, u, GrB_NULL) )
-    OK( GrB_Col_assign(M, w, GrB_NULL, w, GrB_ALL, 0, u, desc1) )
+    desc2 = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE, GrB_INP0 => GrB_TRAN))
+    OK( GrB_Col_extract(w, GrB_NULL, GrB_NULL, M, GrB_ALL, 0, u, desc2) )
+    OK( GrB_Row_assign(M, w, GrB_NULL, w, u, GrB_ALL, 0, desc1) )
     g.ne -= 1
     OK( GrB_free(w) )
+    OK( GrB_free(desc1) )
+    OK( GrB_free(desc2) )
     return true
 end
 

@@ -37,6 +37,8 @@ end
 
 add_edge!(g::AbstractBLASGraph, e::SimpleWeightedEdge) = add_edge!(g, src(e), dst(e), weight(e))
 
+rem_edge!(g::AbstractBLASGraph, e::SimpleWeightedEdge) = rem_edge!(g, src(e), dst(e))
+
 eltype(::AbstractBLASGraph) = UInt64
 
 edgetype(::AbstractBLASGraph) = SimpleEdge{UInt64}
@@ -44,6 +46,7 @@ edgetype(::AbstractBLASGraph) = SimpleEdge{UInt64}
 weights(g::AbstractBLASGraph) = BLASGraphWeights(g.A)
 
 get_weight(g::AbstractBLASGraph, u::Integer, v::Integer) = weights(g)[v, u]
+
 get_weight(g::AbstractBLASGraph, e::SimpleWeightedEdge) = get_weight(g, src(e), dst(e))
 
 copy(g::T) where T <: AbstractBLASGraph = T(copy(g.A))
