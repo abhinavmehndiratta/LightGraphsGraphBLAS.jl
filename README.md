@@ -35,7 +35,7 @@ julia> foreach(println, edges(g))
 Edge 1 => 2 with weight 9
 ```
 
-**Create a graph from an AbstractSimpleGraph :**
+**Create graph from AbstractSimpleGraph :**
 ```julia
 julia> g = BLASDiGraph(SimpleDiGraph(5, 6))
 {5, 6} directed graph
@@ -49,7 +49,7 @@ Edge 3 => 5 with weight 1
 Edge 4 => 2 with weight 1
 ```
 
-**Create a graph from a GraphBLAS matrix :**
+**Create graph from GraphBLAS matrix :**
 ```julia
 julia> I = OneBasedIndex[1, 2, 3]; J = OneBasedIndex[2, 3, 1]; X = Float64[7.2, 3.4, 5.6];
 
