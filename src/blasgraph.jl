@@ -71,7 +71,9 @@ function add_edge!(g::BLASGraph{T}, s::Integer, d::Integer, weight::T = one(T)) 
     v = OneBasedIndex(d)
     M[u, v] = weight
     M[v, u] = weight
-    g.ne += 1
+    if !edge_was_present
+        g.ne += 1
+    end
     return true
 end
 

@@ -68,9 +68,12 @@ is_directed(::Type{<:BLASDiGraph}) = true
 
 function add_edge!(g::BLASDiGraph{T}, s::Integer, d::Integer, weight::T = one(T)) where T
     (!has_vertex(g, s) || !has_vertex(g, d) || weight == 0) && return false    # zero weight edges not allowed
+    edge_was_present = has_edge(g, s, d)
     M = g.A
     M[OneBasedIndex(s), OneBasedIndex(d)] = weight
-    g.ne += 1
+    if !edge_was_present
+        g.ne += 1
+    end
     return true
 end
 
