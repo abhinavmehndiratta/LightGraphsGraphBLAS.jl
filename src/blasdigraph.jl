@@ -60,7 +60,7 @@ function outdegree(g::BLASDiGraph, v::Integer)
     n = SuiteSparseGraphBLAS.nnz(row_v)
     OK( GrB_free(row_v) )
     OK( GrB_free(inp0_tran_desc) )
-    return n
+    return Int64(n)
 end
 
 is_directed(::BLASDiGraph) = true

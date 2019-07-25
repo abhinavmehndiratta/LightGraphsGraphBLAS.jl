@@ -34,7 +34,8 @@ true
 julia> foreach(println, edges(g))
 Edge 1 => 2 with weight 9
 ```
-**Create a graph from a AbstractSimpleGraph :**
+
+**Create a graph from an AbstractSimpleGraph :**
 ```julia
 julia> g = BLASDiGraph(SimpleDiGraph(5, 6))
 {5, 6} directed graph
@@ -47,6 +48,7 @@ Edge 2 => 5 with weight 1
 Edge 3 => 5 with weight 1
 Edge 4 => 2 with weight 1
 ```
+
 **Create a graph from a GraphBLAS matrix :**
 ```julia
 julia> I = OneBasedIndex[1, 2, 3]; J = OneBasedIndex[2, 3, 1]; X = Float64[7.2, 3.4, 5.6];
@@ -62,7 +64,7 @@ Edge 1 => 2 with weight 7.2
 Edge 2 => 3 with weight 3.4
 Edge 3 => 1 with weight 5.6
 
-julia> outneighbors(g, 1)    # nodes of the graph are always of type UInt64 since they are indices of a GraphBLAS matrix
+julia> outneighbors(g, 1)    # vertices of the graph are always of type UInt64 since they are indices of a GraphBLAS matrix
 1-element Array{UInt64,1}:
  0x0000000000000002
 
@@ -91,7 +93,7 @@ julia> get_weight(g, 1, 2)
 4
 ```
 
-**Create a graph from the adjacency matrix :**
+**Create a graph from adjacency matrix :**
 ```julia
 julia> A = [0 1 1; 1 0 0; 0 1 0]
 3×3 Array{Int64,2}:
@@ -103,10 +105,10 @@ julia> g = BLASDiGraph(A)
 {3, 4} directed graph
 
 julia> indegree(g, 1)
-0x0000000000000001
+1
 
 julia> outdegree(g, 1)
-0x0000000000000002
+2
 
 julia> using SparseArrays
 

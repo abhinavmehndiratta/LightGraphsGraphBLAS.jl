@@ -9,7 +9,7 @@ function indegree(g::AbstractBLASGraph, v::Integer)
     OK( GrB_Col_extract(col_v, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), OneBasedIndex(v), GrB_NULL) )
     n = SuiteSparseGraphBLAS.nnz(col_v)
     OK( GrB_free(col_v) )
-    return n
+    return Int64(n)
 end
 
 vertices(g::AbstractBLASGraph) = 1:nv(g)
