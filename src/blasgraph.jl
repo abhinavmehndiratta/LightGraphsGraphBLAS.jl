@@ -38,6 +38,18 @@ function BLASGraph(lg::SimpleGraph)
     return g
 end
 
+function BLASGraph(edge_list::Array{SimpleWeightedEdge{Int64, T}, 1}) where T
+    nvg = 0
+    for e in edge_list
+        nvg = max(nvg, src(e), dst(e))
+    end
+    g = BLASGraph(GrB_Matrix(T, nvg, nvg))
+    for e in edge_list
+        add_edge!(g, e)
+    end
+    return g
+end
+
 BLASGraph(n::Union{Int64, UInt64}) = BLASGraph(GrB_Matrix(Float64, n, n))
 BLASGraph{T}(n::Union{Int64, UInt64}) where T = BLASGraph(GrB_Matrix(T, n, n))
 

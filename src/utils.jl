@@ -13,18 +13,18 @@ function show(io::IO, w::Dists)
     println(n, "-element GraphBLAS distance vector:")
     if n <= 20
         for i = 1:n-1
-            println(i, " => ", w[i])
+            println(w[i])
         end
-        print(n, " => ", w[n])
+        print(w[n])
     else
         for i = 1:10
-            println(i, " => ", w[i])
+            println(w[i])
         end
         println("⋮")
         for i = (n-10+1):n-1
-            println(i, " => ", w[i])
+            println(w[i])
         end
-        print(n, " => ", w[n])
+        print(w[n])
     end    
 end
 

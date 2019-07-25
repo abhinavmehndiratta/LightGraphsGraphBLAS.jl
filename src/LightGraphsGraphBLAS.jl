@@ -8,7 +8,7 @@ import LightGraphs:
     gdistances, bellman_ford_shortest_paths
 
 import SimpleWeightedGraphs:
-    SimpleWeightedEdge
+    SimpleWeightedEdge, weight
 
 import Base:
         show, size, getindex, eltype, copy
@@ -22,7 +22,7 @@ include("algorithms/tricount.jl")
 include("algorithms/bellman_ford.jl")
 include("utils.jl")
 
-export BLASGraph, BLASDiGraph
+export BLASGraph, BLASDiGraph, SimpleWeightedEdge, get_weight
 
 export count_triangles
 
