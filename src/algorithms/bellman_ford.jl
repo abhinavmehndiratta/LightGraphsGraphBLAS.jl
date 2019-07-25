@@ -41,13 +41,9 @@ function bellman_ford_shortest_paths(g::BLASGraph{T}, s::Integer) where T
     end
 
     SuiteSparseGraphBLAS.dropzeros!(A)
-
-    mask_scmp_desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP))
-    OK( GrB_Vector_assign(d, d, GrB_NULL, typemax(Int64), GrB_ALL, 0, mask_scmp_desc) )
     d[s] = 0
 
     OK( GrB_free(dtmp) )
-    OK( GrB_free(mask_scmp_desc) )
 
-    return Dists(d)
+    return d
 end
