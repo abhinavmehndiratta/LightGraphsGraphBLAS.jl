@@ -26,7 +26,6 @@ function gdistances(g::BLASGraph, s::Integer)
         level += 1
     end
 
-    SuiteSparseGraphBLAS.dropzeros!(v)
     OK( GrB_free(q) )
     OK( GrB_free(desc) )
 

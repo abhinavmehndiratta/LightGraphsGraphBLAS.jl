@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/abhinavmehndiratta/LightGraphsGraphBLAS.jl.svg?branch=master)](https://travis-ci.org/abhinavmehndiratta/LightGraphsGraphBLAS.jl)
 ## LightGraphsGraphBLAS.jl
 
-The edge weights can be of types Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32 or Float64 (i.e., the GraphBLAS predefined types). User-defined types are not supported.
+The edge weights can be of type `Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32 or Float64` (i.e., the GraphBLAS predefined types). User-defined types are not supported.
 
 ### Examples:
 
