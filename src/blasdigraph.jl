@@ -45,12 +45,46 @@ end
 BLASDiGraph(n::Union{Int64, UInt64}) = BLASDiGraph(GrB_Matrix(Float64, n, n))
 BLASDiGraph{T}(n::Union{Int64, UInt64}) where T = BLASDiGraph(GrB_Matrix(T, n, n))
 
-function BLASDiGraph(adjmx::SparseMatrixCSC)
-    I, J, X = SparseArrays.findnz(adjmx)
-    return BLASDiGraph(GrB_Matrix(OneBasedIndex.(I), OneBasedIndex.(J), X, nrows = size(adjmx, 1), ncols = size(adjmx, 2)))
+function BLASDiGraph(adjmx::AbstractMatrix{T}) where T
+    dima, dimb = size(adjmx)
+
+    dima != dimb && error("Matrix must be square")
+
+    g = BLASDiGraph{T}(dima)
+    A = g.A
+
+    for i in findall(adjmx .!= 0)
+        r = i[1]
+        c = i[2]
+        w = adjmx[r, c]
+        A[OneBasedIndex(r), OneBasedIndex(c)] = w
+        g.ne += 1
+    end
+
+    return g
 end
 
-BLASDiGraph(m::AbstractMatrix) = BLASDiGraph(sparse(m))
+function BLASDiGraph(adjmx::SparseMatrixCSC{T}) where T
+    dima, dimb = size(adjmx)
+    dima != dimb && error("Matrix must be square")
+
+    g = BLASDiGraph{T}(dima)
+    A = g.A
+    maxc = length(adjmx.colptr)
+
+    for c = 1:(maxc - 1)
+        for rind = adjmx.colptr[c]:(adjmx.colptr[c + 1] - 1)
+            w = adjmx.nzval[rind]
+            if w != 0
+                r = adjmx.rowval[rind]
+                A[OneBasedIndex(r), OneBasedIndex(c)] = w
+                g.ne += 1
+            end
+        end
+    end
+
+    return g
+end
 
 function outdegree(g::BLASDiGraph, v::Integer)
     M = g.A

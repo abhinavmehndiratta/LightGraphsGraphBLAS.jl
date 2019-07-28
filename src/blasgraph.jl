@@ -18,12 +18,19 @@ function BLASGraph(A::GrB_Matrix{T}) where T
     # check if matrix is symmetric
     A_TRAN = A'
     if A != A_TRAN
-        OK(GrB_free(A_TRAN))
+        OK( GrB_free(A_TRAN) )
         error("Matrix must be symmetric")
     end
     OK( GrB_free(A_TRAN) )
 
-    return BLASGraph{T}(A, nrows, SuiteSparseGraphBLAS.nnz(A)/2)
+    ne = SuiteSparseGraphBLAS.nnz(A)
+
+    # add self-loops
+    X = SuiteSparseGraphBLAS.Diagonal(A)
+    ne += SuiteSparseGraphBLAS.nnz(X)
+    OK( GrB_free(X) )
+
+    return BLASGraph{T}(A, nrows, ne÷2)
 end
 
 function BLASGraph(lg::SimpleGraph)
@@ -53,12 +60,56 @@ end
 BLASGraph(n::Union{Int64, UInt64}) = BLASGraph(GrB_Matrix(Float64, n, n))
 BLASGraph{T}(n::Union{Int64, UInt64}) where T = BLASGraph(GrB_Matrix(T, n, n))
 
-function BLASGraph(adjmx::SparseMatrixCSC)
-    I, J, X = SparseArrays.findnz(adjmx)
-    return BLASGraph(GrB_Matrix(OneBasedIndex.(I), OneBasedIndex.(J), X, nrows = size(adjmx, 1), ncols = size(adjmx, 2)))
+function BLASGraph(adjmx::AbstractMatrix{T}) where T
+    dima, dimb = size(adjmx)
+
+    dima != dimb && error("Matrix must be square")
+    !issymmetric(adjmx) && error("Matrix must be symmetric")
+
+    g = BLASGraph{T}(dima)
+    A = g.A
+
+    for i in findall(triu(adjmx) .!= 0)
+        r = i[1]
+        c = i[2]
+        w = adjmx[r, c]
+        A[OneBasedIndex(r), OneBasedIndex(c)] = w
+        A[OneBasedIndex(c), OneBasedIndex(r)] = w
+        g.ne += 1
+    end
+
+    return g
 end
 
-BLASGraph(m::AbstractMatrix) = BLASGraph(sparse(m))
+function BLASGraph(adjmx::SparseMatrixCSC{T}) where T
+    dima, dimb = size(adjmx)
+
+    dima != dimb && error("Matrix must be square")
+    !issymmetric(adjmx) && error("Matrix must be symmetric")
+
+    g = BLASGraph{T}(dima)
+    A = g.A
+    maxc = length(adjmx.colptr)
+    n = 0
+
+    for c = 1:(maxc - 1)
+        for rind = adjmx.colptr[c]:(adjmx.colptr[c + 1] - 1)
+            w = adjmx.nzval[rind]
+            if w != 0
+                r = adjmx.rowval[rind]
+                A[OneBasedIndex(r), OneBasedIndex(c)] = w
+                n += 1
+                if r == c
+                    n += 1
+                end
+            end
+        end
+    end
+
+    g.ne = n÷2
+
+    return g
+end
 
 is_directed(::BLASGraph) = false
 is_directed(::Type{<:BLASGraph}) = false

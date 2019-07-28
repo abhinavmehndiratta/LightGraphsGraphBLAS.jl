@@ -1,6 +1,6 @@
 module LightGraphsGraphBLAS
 
-using LightGraphs, GraphBLASInterface, SuiteSparseGraphBLAS, SparseArrays
+using LightGraphs, GraphBLASInterface, SuiteSparseGraphBLAS, SparseArrays, LinearAlgebra
 
 import LightGraphs:
     ne, nv, is_directed, has_vertex, vertices, has_edge, add_edge!, rem_edge!,
