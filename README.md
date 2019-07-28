@@ -3,7 +3,7 @@
 
 The edge weights can be of type `Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32 or Float64` (i.e., the GraphBLAS predefined types). User-defined types are not supported.
 
-### Examples:
+### Examples
 
 ```julia
 julia> using GraphBLASInterface, SuiteSparseGraphBLAS, LightGraphsGraphBLAS, LightGraphs
@@ -123,4 +123,111 @@ julia> B = sparse(A)
 
 julia> g = BLASDiGraph(B)
 {3, 4} directed graph
+```
+
+### Benchmarks
+
+**gdistances (algorithm: [bfs_simple](https://github.com/GraphBLAS/LAGraph/blob/master/Source/Algorithm/LAGraph_bfs_simple.c)) :**
+```julia
+julia> using GraphBLASInterface, SuiteSparseGraphBLAS, LightGraphsGraphBLAS, LightGraphs, MatrixDepot, BenchmarkTools, SNAPDatasets
+
+julia> md = mdopen("DIMACS10/caidaRouterLevel");
+
+julia> A = md.A
+
+julia> lg = SimpleGraph(A)
+{192244, 609066} undirected simple Int64 graph
+
+julia> bg = BLASGraph(lg)
+{192244, 609066} undirected graph
+
+julia> @benchmark gdistances(lg, source) setup = (source = rand(1:nv(lg)))
+BenchmarkTools.Trial:
+  memory estimate:  4.42 MiB
+  allocs estimate:  11
+  --------------
+  minimum time:     212.493 μs (0.00% GC)
+  median time:      39.958 ms (0.00% GC)
+  mean time:        40.258 ms (0.00% GC)
+  maximum time:     45.352 ms (0.00% GC)
+  --------------
+  samples:          124
+  evals/sample:     1
+
+julia> @benchmark gdistances(bg, source) setup = (source = rand(1:nv(bg)))
+BenchmarkTools.Trial:
+  memory estimate:  2.91 KiB
+  allocs estimate:  96
+  --------------
+  minimum time:     85.847 ms (0.00% GC)
+  median time:      87.728 ms (0.00% GC)
+  mean time:        88.467 ms (0.00% GC)
+  maximum time:     94.347 ms (0.00% GC)
+  --------------
+  samples:          57
+  evals/sample:     1
+
+julia> lg = loadsnap(:soc_slashdot0902_u)
+{82168, 582533} undirected simple Int64 graph
+
+julia> bg = BLASGraph(lg)
+{82168, 582533} undirected graph
+
+julia> @benchmark gdistances(lg, source) setup = (source = rand(1:nv(lg)))
+BenchmarkTools.Trial:
+  memory estimate:  1.89 MiB
+  allocs estimate:  8
+  --------------
+  minimum time:     13.377 ms (0.00% GC)
+  median time:      15.876 ms (0.00% GC)
+  mean time:        15.944 ms (0.25% GC)
+  maximum time:     21.372 ms (0.00% GC)
+  --------------
+  samples:          313
+  evals/sample:     1
+
+julia> @benchmark gdistances(bg, source) setup = (source = rand(1:nv(bg)))
+BenchmarkTools.Trial:
+  memory estimate:  2.06 KiB
+  allocs estimate:  66
+  --------------
+  minimum time:     36.501 ms (0.00% GC)
+  median time:      39.880 ms (0.00% GC)
+  mean time:        40.116 ms (0.00% GC)
+  maximum time:     53.307 ms (0.00% GC)
+  --------------
+  samples:          125
+  evals/sample:     1
+
+julia> lg = loadsnap(:facebook_combined)
+{4039, 88234} undirected simple Int64 graph
+
+julia> bg = BLASGraph(lg)
+{4039, 88234} undirected graph
+
+julia> @benchmark gdistances(lg, source) setup = (source = rand(1:nv(lg)))
+BenchmarkTools.Trial:
+  memory estimate:  95.69 KiB
+  allocs estimate:  8
+  --------------
+  minimum time:     634.694 μs (0.00% GC)
+  median time:      683.736 μs (0.00% GC)
+  mean time:        693.038 μs (0.30% GC)
+  maximum time:     1.699 ms (53.43% GC)
+  --------------
+  samples:          6953
+  evals/sample:     1
+
+julia> @benchmark gdistances(bg, source) setup = (source = rand(1:nv(bg)))
+BenchmarkTools.Trial:
+  memory estimate:  1.63 KiB
+  allocs estimate:  50
+  --------------
+  minimum time:     2.114 ms (0.00% GC)
+  median time:      2.462 ms (0.00% GC)
+  mean time:        2.462 ms (0.00% GC)
+  maximum time:     4.275 ms (0.00% GC)
+  --------------
+  samples:          2018
+  evals/sample:     1
 ```
