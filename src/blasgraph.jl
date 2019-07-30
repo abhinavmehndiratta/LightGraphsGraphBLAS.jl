@@ -47,8 +47,8 @@ function BLASGraph(lg::SimpleGraph)
         end
     end
 
-    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
-    OK( GrB_Matrix_assign(A, GrB_NULL, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
+    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN, GrB_MASK => GrB_SCMP))
+    OK( GrB_Matrix_assign(A, A, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
     OK( GrB_free(desc) )
 
     g.ne = ne(lg)
@@ -88,8 +88,8 @@ function BLASGraph(adjmx::AbstractMatrix{T}) where T
         g.ne += 1
     end
 
-    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
-    OK( GrB_Matrix_assign(A, GrB_NULL, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
+    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN, GrB_MASK => GrB_SCMP))
+    OK( GrB_Matrix_assign(A, A, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
     OK( GrB_free(desc) )
 
     return g
