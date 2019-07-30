@@ -34,14 +34,25 @@ function BLASGraph(A::GrB_Matrix{T}) where T
 end
 
 function BLASGraph(lg::SimpleGraph)
-    A = GrB_Matrix(Int64, nv(lg), nv(lg))
-    g = BLASGraph(A)
+    g = BLASGraph{Int64}(nv(lg))
+    A = g.A
+
     for u in vertices(lg)
-        for v in outneighbors(lg, u)
+        list_u = lg.fadjlist[u]
+        i = searchsortedfirst(list_u, u)
+        while i <= length(list_u)
+            v = list_u[i]
             A[OneBasedIndex(u), OneBasedIndex(v)] = 1
+            i += 1
         end
     end
+
+    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
+    OK( GrB_Matrix_assign(A, GrB_NULL, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
+    OK( GrB_free(desc) )
+
     g.ne = ne(lg)
+    
     return g
 end
 
@@ -74,9 +85,12 @@ function BLASGraph(adjmx::AbstractMatrix{T}) where T
         c = i[2]
         w = adjmx[r, c]
         A[OneBasedIndex(r), OneBasedIndex(c)] = w
-        A[OneBasedIndex(c), OneBasedIndex(r)] = w
         g.ne += 1
     end
+
+    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
+    OK( GrB_Matrix_assign(A, GrB_NULL, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
+    OK( GrB_free(desc) )
 
     return g
 end
