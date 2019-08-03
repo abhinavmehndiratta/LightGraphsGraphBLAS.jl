@@ -46,6 +46,11 @@ function prim_mst(graph::BLASGraph{T}) where T
         OK( GrB_eWiseAdd(d, GrB_NULL, GrB_NULL, MinT, d, Arow, GrB_NULL) )
     end
 
-	OK( GrB_free(desc1) )
+    OK( GrB_free(desc1) )
+    OK( GrB_free(mask) )
+    OK( GrB_free(s) )
+    OK( GrB_free(d) )
+    OK( GrB_free(temp) )
+    OK( GrB_free(Arow) )
     return weight
 end
