@@ -1,6 +1,6 @@
 # TO-DO can be optimized when user-defined types are supported
 function argmin(v::GrB_Vector)
-	n = SuiteSparseGraphBLAS.nnz(v)
+    n = SuiteSparseGraphBLAS.nnz(v)
     n == 0 && error(GrB_PANIC)
     idx, vals = SuiteSparseGraphBLAS.findnz(v)
     return idx[argmin(vals)]
@@ -8,11 +8,11 @@ end
 
 # return sum of edge-weights of MST using Prim's algorithm
 function prim_mst(graph::BLASGraph{T}) where T
-	A = graph.A
+    A = graph.A
     START_NODE = ZeroBasedIndex(0)
     weight = zero(T)
-	nvg = nv(graph)
-	desc1 = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))
+    nvg = nv(graph)
+    desc1 = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))
 
     mask = GrB_Vector(Bool, nvg)
     mask[START_NODE] = true
