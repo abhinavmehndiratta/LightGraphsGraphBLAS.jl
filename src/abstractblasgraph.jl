@@ -41,7 +41,7 @@ rem_edge!(g::AbstractBLASGraph, e::SimpleWeightedEdge) = rem_edge!(g, src(e), ds
 
 eltype(::AbstractBLASGraph) = UInt64
 
-edgetype(::AbstractBLASGraph) = SimpleEdge{UInt64}
+edgetype(::AbstractBLASGraph) = SimpleWeightedEdge{UInt64}
 
 weights(g::AbstractBLASGraph) = BLASGraphWeights(g.A)
 
