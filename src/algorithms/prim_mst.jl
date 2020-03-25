@@ -12,7 +12,7 @@ function prim_mst(graph::BLASGraph{T}) where T
     START_NODE = ZeroBasedIndex(0)
     weight = zero(T)
     nvg = nv(graph)
-    desc1 = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))
+    desc1 = GrB_Descriptor(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE)
 
     mask = GrB_Vector(Bool, nvg)
     mask[START_NODE] = true

@@ -1,7 +1,7 @@
 function gdistances(g::BLASGraph, s::Integer)
     s = OneBasedIndex(s)
     A = g.A
-    desc = GrB_Descriptor(Dict(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE))
+    desc = GrB_Descriptor(GrB_MASK => GrB_SCMP, GrB_OUTP => GrB_REPLACE)
     n = nv(g)
 
     v = GrB_Vector(Int64, n)        # result vector

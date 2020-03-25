@@ -89,7 +89,7 @@ end
 function outdegree(g::BLASDiGraph, v::Integer)
     M = g.A
     row_v = GrB_Vector(Bool, nv(g))
-    inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
+    inp0_tran_desc = GrB_Descriptor(GrB_INP0 => GrB_TRAN)
     OK( GrB_Col_extract(row_v, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), OneBasedIndex(v), inp0_tran_desc) )
     n = SuiteSparseGraphBLAS.nnz(row_v)
     OK( GrB_free(row_v) )
@@ -118,8 +118,8 @@ function rem_edge!(g::BLASDiGraph{T}, s::Integer, d::Integer) where T
     v = OneBasedIndex(d)
     M[u, v] = T(0)
     w = GrB_Vector(UInt64, nv(g))
-    desc1 = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE))
-    desc2 = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE, GrB_INP0 => GrB_TRAN))
+    desc1 = GrB_Descriptor(GrB_OUTP => GrB_REPLACE)
+    desc2 = GrB_Descriptor(GrB_OUTP => GrB_REPLACE, GrB_INP0 => GrB_TRAN)
     OK( GrB_Col_extract(w, GrB_NULL, GrB_NULL, M, GrB_ALL, 0, u, desc2) )
     OK( GrB_Row_assign(M, w, GrB_NULL, w, u, GrB_ALL, 0, desc1) )
     g.ne -= 1
@@ -144,7 +144,7 @@ end
 function outneighbors(g::BLASDiGraph, v::Integer)
     M = g.A
     x = GrB_Vector(Bool, nv(g))
-    inp0_tran_desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN))
+    inp0_tran_desc = GrB_Descriptor(GrB_INP0 => GrB_TRAN)
     OK( GrB_Col_extract(x, GrB_NULL, GrB_NULL, M, GrB_ALL, nv(g), OneBasedIndex(v), inp0_tran_desc) )
     I, X = SuiteSparseGraphBLAS.findnz(x)
     nbrs = Vector{UInt64}(undef, length(I))

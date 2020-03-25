@@ -47,7 +47,7 @@ function BLASGraph(lg::SimpleGraph)
         end
     end
 
-    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN, GrB_MASK => GrB_SCMP))
+    desc = GrB_Descriptor(GrB_INP0 => GrB_TRAN, GrB_MASK => GrB_SCMP)
     OK( GrB_Matrix_assign(A, A, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
     OK( GrB_free(desc) )
 
@@ -88,7 +88,7 @@ function BLASGraph(adjmx::AbstractMatrix{T}) where T
         g.ne += 1
     end
 
-    desc = GrB_Descriptor(Dict(GrB_INP0 => GrB_TRAN, GrB_MASK => GrB_SCMP))
+    desc = GrB_Descriptor(GrB_INP0 => GrB_TRAN, GrB_MASK => GrB_SCMP)
     OK( GrB_Matrix_assign(A, A, GrB_NULL, A, GrB_ALL, 0, GrB_ALL, 0, desc) )
     OK( GrB_free(desc) )
 
@@ -150,8 +150,8 @@ function rem_edge!(g::BLASGraph{T}, s::Integer, d::Integer) where T
     M[u, v] = T(0)
     M[v, u] = T(0)
     w = GrB_Vector(UInt64, nv(g))
-    desc1 = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE))
-    desc2 = GrB_Descriptor(Dict(GrB_OUTP => GrB_REPLACE, GrB_INP0 => GrB_TRAN))
+    desc1 = GrB_Descriptor(GrB_OUTP => GrB_REPLACE)
+    desc2 = GrB_Descriptor(GrB_OUTP => GrB_REPLACE, GrB_INP0 => GrB_TRAN)
     OK( GrB_Col_extract(w, GrB_NULL, GrB_NULL, M, GrB_ALL, 0, u, GrB_NULL) )
     OK( GrB_Col_assign(M, w, GrB_NULL, w, GrB_ALL, 0, u, desc1) )
     OK( GrB_Col_extract(w, GrB_NULL, GrB_NULL, M, GrB_ALL, 0, u, desc2) )
