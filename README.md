@@ -138,6 +138,9 @@ julia> A = md.A
 julia> lg = SimpleGraph(A)
 {192244, 609066} undirected simple Int64 graph
 
+julia> GrB_init(GrB_NONBLOCKING)
+GrB_SUCCESS::GrB_Info = 0
+
 julia> bg = BLASGraph(lg)
 {192244, 609066} undirected graph
 
