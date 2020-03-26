@@ -1,6 +1,6 @@
 function count_triangles(g::BLASGraph)
     M = g.A
-    L = LowerTriangular(M)
+    L = SuiteSparseGraphBLAS.LowerTriangular(M)
     C = GrB_Matrix(Int64, size(M)...)
 
     # Descriptor for mxm
