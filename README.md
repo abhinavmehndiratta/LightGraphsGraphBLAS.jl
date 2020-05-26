@@ -127,6 +127,8 @@ julia> g = BLASDiGraph(B)
 
 ### Benchmarks
 
+On 6 cores -
+
 **gdistances (algorithm: [bfs_simple](https://github.com/GraphBLAS/LAGraph/blob/master/Source/Algorithm/LAGraph_bfs_simple.c)) :**
 ```julia
 julia> using GraphBLASInterface, SuiteSparseGraphBLAS, LightGraphsGraphBLAS, LightGraphs, MatrixDepot, BenchmarkTools, SNAPDatasets
@@ -145,29 +147,29 @@ julia> bg = BLASGraph(lg)
 {192244, 609066} undirected graph
 
 julia> @benchmark gdistances(lg, source) setup = (source = rand(1:nv(lg)))
-BenchmarkTools.Trial:
+BenchmarkTools.Trial: 
   memory estimate:  4.42 MiB
-  allocs estimate:  11
+  allocs estimate:  9
   --------------
-  minimum time:     212.493 μs (0.00% GC)
-  median time:      39.958 ms (0.00% GC)
-  mean time:        40.258 ms (0.00% GC)
-  maximum time:     45.352 ms (0.00% GC)
+  minimum time:     159.524 μs (0.00% GC)
+  median time:      29.321 ms (0.00% GC)
+  mean time:        29.411 ms (0.00% GC)
+  maximum time:     34.208 ms (0.00% GC)
   --------------
-  samples:          124
+  samples:          170
   evals/sample:     1
 
 julia> @benchmark gdistances(bg, source) setup = (source = rand(1:nv(bg)))
-BenchmarkTools.Trial:
-  memory estimate:  2.91 KiB
-  allocs estimate:  96
+BenchmarkTools.Trial: 
+  memory estimate:  2.55 KiB
+  allocs estimate:  95
   --------------
-  minimum time:     85.847 ms (0.00% GC)
-  median time:      87.728 ms (0.00% GC)
-  mean time:        88.467 ms (0.00% GC)
-  maximum time:     94.347 ms (0.00% GC)
+  minimum time:     42.370 ms (0.00% GC)
+  median time:      45.216 ms (0.00% GC)
+  mean time:        45.386 ms (0.00% GC)
+  maximum time:     53.582 ms (0.00% GC)
   --------------
-  samples:          57
+  samples:          111
   evals/sample:     1
 
 julia> lg = loadsnap(:soc_slashdot0902_u)
@@ -177,29 +179,29 @@ julia> bg = BLASGraph(lg)
 {82168, 582533} undirected graph
 
 julia> @benchmark gdistances(lg, source) setup = (source = rand(1:nv(lg)))
-BenchmarkTools.Trial:
+BenchmarkTools.Trial: 
   memory estimate:  1.89 MiB
   allocs estimate:  8
   --------------
-  minimum time:     13.377 ms (0.00% GC)
-  median time:      15.876 ms (0.00% GC)
-  mean time:        15.944 ms (0.25% GC)
-  maximum time:     21.372 ms (0.00% GC)
+  minimum time:     9.511 ms (0.00% GC)
+  median time:      10.535 ms (0.00% GC)
+  mean time:        10.542 ms (0.20% GC)
+  maximum time:     12.301 ms (0.00% GC)
   --------------
-  samples:          313
+  samples:          473
   evals/sample:     1
 
 julia> @benchmark gdistances(bg, source) setup = (source = rand(1:nv(bg)))
-BenchmarkTools.Trial:
-  memory estimate:  2.06 KiB
-  allocs estimate:  66
+BenchmarkTools.Trial: 
+  memory estimate:  1.56 KiB
+  allocs estimate:  60
   --------------
-  minimum time:     36.501 ms (0.00% GC)
-  median time:      39.880 ms (0.00% GC)
-  mean time:        40.116 ms (0.00% GC)
-  maximum time:     53.307 ms (0.00% GC)
+  minimum time:     16.929 ms (0.00% GC)
+  median time:      20.320 ms (0.00% GC)
+  mean time:        20.280 ms (0.00% GC)
+  maximum time:     35.234 ms (0.00% GC)
   --------------
-  samples:          125
+  samples:          247
   evals/sample:     1
 
 julia> lg = loadsnap(:facebook_combined)
@@ -209,28 +211,28 @@ julia> bg = BLASGraph(lg)
 {4039, 88234} undirected graph
 
 julia> @benchmark gdistances(lg, source) setup = (source = rand(1:nv(lg)))
-BenchmarkTools.Trial:
+BenchmarkTools.Trial: 
   memory estimate:  95.69 KiB
   allocs estimate:  8
   --------------
-  minimum time:     634.694 μs (0.00% GC)
-  median time:      683.736 μs (0.00% GC)
-  mean time:        693.038 μs (0.30% GC)
-  maximum time:     1.699 ms (53.43% GC)
+  minimum time:     425.521 μs (0.00% GC)
+  median time:      429.602 μs (0.00% GC)
+  mean time:        442.115 μs (0.29% GC)
+  maximum time:     1.709 ms (62.72% GC)
   --------------
-  samples:          6953
+  samples:          10000
   evals/sample:     1
 
 julia> @benchmark gdistances(bg, source) setup = (source = rand(1:nv(bg)))
-BenchmarkTools.Trial:
-  memory estimate:  1.63 KiB
-  allocs estimate:  50
+BenchmarkTools.Trial: 
+  memory estimate:  1.13 KiB
+  allocs estimate:  44
   --------------
-  minimum time:     2.114 ms (0.00% GC)
-  median time:      2.462 ms (0.00% GC)
-  mean time:        2.462 ms (0.00% GC)
-  maximum time:     4.275 ms (0.00% GC)
+  minimum time:     662.463 μs (0.00% GC)
+  median time:      1.472 ms (0.00% GC)
+  mean time:        1.478 ms (0.00% GC)
+  maximum time:     10.979 ms (0.00% GC)
   --------------
-  samples:          2018
+  samples:          3313
   evals/sample:     1
 ```
